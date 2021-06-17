@@ -3,31 +3,34 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
-	"net/http"
 	"io/ioutil"
+	"log"
+	"net/http"
 )
 
 func main() {
-	// fmt.Println(os.Getenv("BILI_JCT"))
-	// fmt.Println(os.Getenv("DEDEUSERID"))
-	// fmt.Println(os.Getenv("SESSDATA"))
-	// url := "https://www.baidu.com/"
-	url := "https://github.com/"
+	// url := "https://t.bilibili.com/"
+	// url := "https://account.bilibili.com/account/home"
+	url := "https://api.bilibili.com/x/web-interface/nav"
 	tr := &http.Transport{
-		TLSClientConfig:	&tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: tr}
-	res, err := client.Get(url)
+	req, err := CreateGetRequest(url)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		log.Fatalln(err)
 		return
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		fmt.Println("error: status code ", res.StatusCode)
+		log.Fatalln(res.Status)
 		return
 	}
-	fmt.Println(res.Status)
+	fmt.Println(url, res.Status)
 	body, _ := ioutil.ReadAll(res.Body)
 	fmt.Print(string(body))
 }
