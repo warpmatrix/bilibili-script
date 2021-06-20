@@ -4,11 +4,18 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
-	"log"
+	"main/src/domain"
 	"net/http"
 )
 
-func main() {
+func CreateGetRequest(url string) (*http.Request, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.101 Safari/537.36")
+	req.Header.Set("Cookie", domain.GetCookie())
+	return req, err
+}
+
+func getMsgBlob() ([]byte, error) {
 	// url := "https://t.bilibili.com/"
 	// url := "https://account.bilibili.com/account/home"
 	url := "https://api.bilibili.com/x/web-interface/nav"
@@ -18,19 +25,16 @@ func main() {
 	client := &http.Client{Transport: tr}
 	req, err := CreateGetRequest(url)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	res, err := client.Do(req)
 	if err != nil {
-		log.Fatalln(err)
-		return
+		return nil, err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		log.Fatalln(res.Status)
-		return
+		return nil, fmt.Errorf(res.Status)
 	}
-	fmt.Println(url, res.Status)
-	body, _ := ioutil.ReadAll(res.Body)
-	fmt.Print(string(body))
+	ret, err := ioutil.ReadAll(res.Body)
+	return ret, err
 }
