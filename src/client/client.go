@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"crypto/tls"
@@ -15,7 +15,7 @@ func CreateGetRequest(url string) (*http.Request, error) {
 	return req, err
 }
 
-func getMsgBlob() ([]byte, error) {
+func GetMsgBlob() ([]byte, error) {
 	// url := "https://t.bilibili.com/"
 	// url := "https://account.bilibili.com/account/home"
 	url := "https://api.bilibili.com/x/web-interface/nav"

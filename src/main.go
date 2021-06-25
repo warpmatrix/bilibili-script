@@ -3,10 +3,11 @@ package main
 import (
 	"log"
 	"main/src/domain"
+	"main/src/client"
 )
 
 func main() {
-	blob, err := getMsgBlob()
+	blob, err := client.GetMsgBlob()
 	if err != nil {
 		log.Fatalln(err)
 	}
