@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"log"
+	log "main/src/logger"
 	"os"
 	"path/filepath"
 
@@ -19,15 +19,13 @@ func init() {
 	filePath := filepath.Join(directory, filename)
 	blob, err := os.ReadFile(filePath)
 	if err != nil {
-		goto handleErr
+		log.Info("用户未进行自定义设置，使用默认配置")
+		return
 	}
 	err = yaml.Unmarshal(blob, &cfg)
 	if err != nil {
-		goto handleErr
+		log.Warning("读取用户配置失败：", err, "（使用默认配置）")
 	}
-	return
-handleErr:
-	log.Println(err)
 }
 
 func LoadCfg(name string) interface{} {

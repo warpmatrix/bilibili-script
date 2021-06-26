@@ -3,9 +3,8 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-
 	"github.com/mitchellh/mapstructure"
+	log "main/src/logger"
 )
 
 type User struct {
@@ -41,16 +40,16 @@ func ParseUser(blob []byte) (User, error) {
 }
 
 func (user User) PrintInfo() {
-	log.Println("【用户名】:", user.Uname)
-	log.Println("【硬币数量】:", user.Money)
-	log.Println("【当前等级】:", user.Level.CurLevel)
-	log.Println("【当前经验】:", user.Level.CurExp)
+	log.Info("【用户名】:", user.Uname)
+	log.Info("【硬币数量】:", user.Money)
+	log.Info("【当前等级】:", user.Level.CurLevel)
+	log.Info("【当前经验】:", user.Level.CurExp)
 	switch t := user.Level.NextExp.(type) {
 	case float64:
-		log.Println("【距离下一级的经验】：", t)
+		log.Info("【距离下一级的经验】：", t)
 	case string:
-		log.Println("【距离一下级的经验】：当前已经是最高级")
+		log.Info("【距离一下级的经验】：当前已经是最高级")
 	default:
-		log.Println("【距离一下级的经验】：类型转换错误")
+		log.Info("【距离一下级的经验】：类型转换错误")
 	}
 }
