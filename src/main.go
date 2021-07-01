@@ -4,6 +4,7 @@ import (
 	"main/src/client"
 	"main/src/domain"
 	log "main/src/logger"
+	"main/src/task"
 )
 
 func main() {
@@ -12,6 +13,7 @@ func main() {
 		log.Fatal(err)
 	}
 	user.PrintInfo()
+	task.RunTasks()
 }
 
 func getUserInfo() (domain.User, error) {
