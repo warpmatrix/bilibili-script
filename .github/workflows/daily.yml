@@ -1,0 +1,25 @@
+name: Daily Task
+
+on:
+  schedule:
+    - cron: '20 0 * * *'
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+
+      - name: Build & Run
+        env:
+          BILI_JCT: ${{ secrets.BILI_JCT }}
+          DEDEUSER: ${{ secrets.DEDEUSER }}
+          SESSDATA: ${{ secrets.SESSDATA }}
+        run: |
+          go build -o bin/ -v ./...
+          mv bin/src main
+          ./main
