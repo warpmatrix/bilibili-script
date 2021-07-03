@@ -1,16 +1,19 @@
-TARGET = bin/main
-BINDIR = bin
 SRCDIR = src
 SRC = $(shell find $(SRCDIR) -name '*.go')
+BINDIR = bin
+APP = $(BINDIR)/main
+IMAGE = bilibili-script
 
-docker-image: $(TARGET) dockerfile
+.PHONY: run clean
+
+run: $(APP) dockerfile docker-compose.yml
+	docker-compose up -d --build
+
+$(APP): $(SRC)
 	go test ./...
-	docker build -t bilibili-script .
-	docker run -it --env-file cookie.list -v $$(pwd)/config.yaml:/config.yaml bilibili-script
-
-$(TARGET): $(SRC)
 	go build -o $(BINDIR)/ ./...
-	mv $(BINDIR)/$(SRCDIR) $(TARGET)
+	mv $(BINDIR)/$(SRCDIR) $(APP)
 
 clean:
-	@rm -rf bin
+	@rm -rf $(BINDIR)
+	docker-compose down

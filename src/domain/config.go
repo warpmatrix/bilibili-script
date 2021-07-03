@@ -12,7 +12,7 @@ var cfg map[string]interface{}
 
 const (
 	filename  = "config.yaml"
-	directory = "./"
+	directory = "config/"
 )
 
 func init() {

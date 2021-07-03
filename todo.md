@@ -13,9 +13,11 @@
 - [x] 完成 fetcher 的其他方法，重构整理 client 结构
 - [x] 引入等待机制，模拟浏览器行为
 - [x] `todo` 和 `.gitignore` 的迁移，实现 master 和 dev 的分离
+- [x] docker 的 cron
+- [x] 分离 dockerfile 和 docker-compose（docker 对多行变量的支持？）
+- [x] 多账户的支持，通过 docker-compose 进行具体配置
 - [ ] 完成日常任务：manga、live、daily
 - [ ] 重构 status.code 部分，部分请求可能以 400 状态码的形式返回结构
-- [ ] 多账户的支持，使用变量数组？系统变量直接使用 yaml 格式书写？
-- [ ] 分离 dockerfile 和 docker-compose（docker 对多行变量的支持？）
 - [ ] 默认配置的支持
 - [ ] 使用 docker secrect 管理 cookie 作为系统变量进行传递
+- [ ] log 的持久化
