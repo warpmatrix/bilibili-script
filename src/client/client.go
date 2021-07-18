@@ -31,7 +31,7 @@ func newRequest(method string, url string, body io.Reader) (*http.Request, error
 	return req, err
 }
 
-func Get(url string) ([]byte, error) {
+func Get(url string) (*http.Response, error) {
 	req, err := newRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func Get(url string) ([]byte, error) {
 	return do(req)
 }
 
-func Post(url string, contentType string, body io.Reader) ([]byte, error) {
+func Post(url string, contentType string, body io.Reader) (*http.Response, error) {
 	req, err := newRequest(http.MethodPost, url, body)
 	if err != nil {
 		return nil, err
@@ -50,17 +50,20 @@ func Post(url string, contentType string, body io.Reader) ([]byte, error) {
 	return do(req)
 }
 
-func PostJson(url string, jsonBlob []byte) ([]byte, error) {
+func PostJson(url string, jsonBlob []byte) (*http.Response, error) {
 	return Post(url, "application/json", strings.NewReader(string(jsonBlob)))
 }
 
-func PostForm(url string, data url.Values) ([]byte, error) {
+func PostForm(url string, data url.Values) (*http.Response, error) {
 	return Post(url, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 }
 
-func do(req *http.Request) ([]byte, error) {
+func do(req *http.Request) (*http.Response, error) {
 	wait(1, 3)
-	resp, err := client.Do(req)
+	return client.Do(req)
+}
+
+func ParseResp(resp *http.Response, err error) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}

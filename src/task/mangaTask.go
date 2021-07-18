@@ -1,11 +1,11 @@
 package task
 
 import (
-	"encoding/json"
 	"fmt"
 	"main/src/client"
 	"main/src/domain"
 	log "main/src/logger"
+	"net/http"
 	"net/url"
 )
 
@@ -53,20 +53,17 @@ func (t *task) mangaSignIn() error {
 	param := make(url.Values)
 	param.Add("platform", mangaCfg.platform)
 	url := "https://manga.bilibili.com/twirp/activity.v1.Activity/ClockIn"
-	blob, err := client.PostForm(url, param)
+	resp, err := client.PostForm(url, param)
 	if err != nil {
 		return err
 	}
-	var msg domain.Message
-	err = json.Unmarshal(blob, &msg)
-	if err != nil {
-		return err
-	}
-	switch msg.Code {
-	case 0:
+	switch resp.StatusCode {
+	case http.StatusOK:
 		t.result = "漫画签到成功"
+	case http.StatusBadRequest:
+		t.result = "请求错误，请检查今天是否已提前完成签到"
 	default:
-		t.result = "今天已经完成签到了"
+		return fmt.Errorf(resp.Status, "签到失败")
 	}
 	return nil
 }
