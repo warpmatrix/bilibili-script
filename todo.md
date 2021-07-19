@@ -17,6 +17,7 @@
 - [x] 分离 dockerfile 和 docker-compose（docker 对多行变量的支持？）
 - [x] 多账户的支持，通过 docker-compose 进行具体配置
 - [x] 重构 status.code 部分，部分请求可能以 400 状态码的形式返回结构
+- [x] github action 对多用户的支持，实现 user_cookie 环境变量
 - [ ] 完成日常任务：manga、live、daily
 - [ ] 默认配置的支持
 - [ ] 使用 docker secrect 管理 cookie 作为系统变量进行传递

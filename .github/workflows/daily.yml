@@ -26,7 +26,7 @@ jobs:
           go build -o bin/ -v ./...
           mv bin/src ./main
 
-  daily1:
+  user:
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -40,4 +40,28 @@ jobs:
           BILI_JCT: ${{ secrets.BILI_JCT }}
           DEDEUSER: ${{ secrets.DEDEUSER }}
           SESSDATA: ${{ secrets.SESSDATA }}
-        run: ./main
+          CFGFILE: config/user-cfg.yaml
+        run: |
+          if [ -n "$CFGFILE" ]; then
+            mv $CFGFILE config/config.yaml
+          fi
+          ./main
+
+  # user2:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/cache@v2
+  #       with:
+  #         path: ./main
+  #         key: ${{ hashFiles('src/') }}
+  #     - name: Run Task
+  #       env:
+  #         COOKIE: ${{ secrets.USER_COOKIE }}
+  #         CFGFILE: config/user-cfg.yaml
+  #       run: |
+  #         if [ -n "$CFGFILE" ]; then
+  #           mv $CFGFILE config/config.yaml
+  #         fi
+  #         ./main
