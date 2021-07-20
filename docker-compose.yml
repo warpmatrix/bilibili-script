@@ -1,10 +1,7 @@
 version: '3'
 services:
   user:
-    build:
-      context: .
-      args:
-        config: config/user-cfg.yaml
+    build: .
     env_file: cookie/user.cookie
     tty: true
     stdin_open: true
@@ -14,7 +11,7 @@ services:
   #     context: .
   #     args:
   #       duration: "20 0 * * *"
-  #       config: config/user-cfg.yaml
+  #       cfgFile: config/user-cfg.yaml
   #   env_file: cookie/user2.cookie
   #   tty: true
   #   stdin_open: true

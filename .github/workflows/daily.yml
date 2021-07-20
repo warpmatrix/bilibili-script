@@ -40,12 +40,7 @@ jobs:
           BILI_JCT: ${{ secrets.BILI_JCT }}
           DEDEUSER: ${{ secrets.DEDEUSER }}
           SESSDATA: ${{ secrets.SESSDATA }}
-          CFGFILE: config/user-cfg.yaml
-        run: |
-          if [ -n "$CFGFILE" ]; then
-            mv $CFGFILE config/config.yaml
-          fi
-          ./main
+        run: ./main
 
   # user2:
   #   needs: build
