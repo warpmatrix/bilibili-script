@@ -10,7 +10,7 @@ services:
   #   build:
   #     context: .
   #     args:
-  #       duration: "20 0 * * *"
+  #       cron: "20 0 * * *"
   #       cfgFile: config/user-cfg.yaml
   #   env_file: cookie/user2.cookie
   #   tty: true

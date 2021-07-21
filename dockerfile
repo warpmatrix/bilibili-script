@@ -3,7 +3,7 @@ FROM golang
 WORKDIR /app
 COPY . /app
 
-ARG duration="20 0 * * *"
+ARG cron="20 0 * * *"
 ARG cfgFile=config/config.yaml
 
 RUN go env -w GO111MODULE=on && \
@@ -17,6 +17,6 @@ RUN apt-get update && \
  apt-get install -y cron && \
  rm -rf /var/lib/apt/lists/* && \
  apt-get clean
-RUN echo "${duration} cd /app && bin/main >> tmp.log" | crontab -
+RUN echo "${cron} cd /app && bin/main >> tmp.log" | crontab -
 
 ENTRYPOINT [ "./init.sh" ]
