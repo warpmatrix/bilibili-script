@@ -16,11 +16,11 @@ func main() {
 	task.RunTasks()
 }
 
-func getUserInfo() (domain.User, error) {
+func getUserInfo() (*domain.User, error) {
 	url := "https://api.bilibili.com/x/web-interface/nav"
 	blob, err := client.ParseResp(client.Get(url))
 	if err != nil {
-		return domain.User{}, err
+		return nil, err
 	}
-	return domain.ParseUser(blob)
+	return domain.GetUserInfo(blob)
 }

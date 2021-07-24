@@ -23,7 +23,7 @@ func init() {
 			workPath, _ := os.Getwd()
 			filePath = filepath.Join(workPath, filePath)
 		}
-		log.Info("用户未在定义路径", filePath, "下设置自定义配置，使用默认配置")
+		log.Info("容器未在定义路径", filePath, "下找到配置文件，使用默认配置")
 		return
 	}
 	err = yaml.Unmarshal(blob, &cfg)

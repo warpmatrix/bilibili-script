@@ -31,12 +31,25 @@ func newRequest(method string, url string, body io.Reader) (*http.Request, error
 	return req, err
 }
 
-func Get(url string) (*http.Response, error) {
+func get(url string, params [][]string) (*http.Response, error) {
 	req, err := newRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
+	query := req.URL.Query()
+	for _, param := range params {
+		query.Add(param[0], param[1])
+	}
+	req.URL.RawQuery = query.Encode()
 	return do(req)
+}
+
+func Get(url string) (*http.Response, error) {
+	return get(url, nil)
+}
+
+func GetWithParams(url string, params[][]string) (*http.Response, error) {
+	return get(url, params)
 }
 
 func Post(url string, contentType string, body io.Reader) (*http.Response, error) {

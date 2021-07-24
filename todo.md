@@ -19,6 +19,6 @@
 - [x] 重构 status.code 部分，部分请求可能以 400 状态码的形式返回结构
 - [x] github action 对多用户的支持，实现 user_cookie 环境变量
 - [ ] 完成日常任务：manga、live、daily
-- [ ] 默认配置的支持
+- [ ] 默认配置的支持，error 的重构
 - [ ] 使用 docker secrect 管理 cookie 作为系统变量进行传递
 - [ ] log 的持久化

@@ -85,8 +85,8 @@ func TestParseUser(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			user, err := domain.ParseUser(tC.blob)
-			assert.Equal(t, user, tC.user)
+			user, err := domain.GetUserInfo(tC.blob)
+			assert.Equal(t, *user, tC.user)
 			assert.Nil(t, err)
 		})
 	}

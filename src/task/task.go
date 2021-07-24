@@ -7,19 +7,28 @@ import (
 
 type task struct {
 	name   string
-	run    func() error
 	result string
+	init   func() error
+	impl   func(*task) error
 }
 
 var taskList []*task
 
 func RunTasks() {
 	for _, task := range taskList {
-		err := task.run()
-		if err != nil {
+		if err := task.init(); err != nil {
+			log.Warning(err)
+		}
+		if err := task.run(); err != nil {
 			log.Error(err)
 		} else {
-			log.Info(fmt.Sprintf("【%s】:%s", task.name, task.result))
+			log.Info(fmt.Sprintf("【%s】：%s", task.name, task.result))
 		}
 	}
 }
+
+func (t *task) run() error {
+	return t.impl(t)
+}
+
+var defaultInit = func() error { return nil }

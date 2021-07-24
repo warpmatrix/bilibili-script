@@ -23,7 +23,7 @@ jobs:
         with:
           path: ./main
           key: ${{ hashFiles('src/') }}
-  
+
       - uses: actions/setup-go@v2
         if: steps.cache-bin.outputs.cache-hit != 'true'
         with:
@@ -43,7 +43,7 @@ jobs:
       - name: Test
         if: steps.cache-bin.outputs.cache-hit != 'true'
         run: go test -v ./...
-      
+
       - name: Build
         if: steps.cache-bin.outputs.cache-hit != 'true'
         run : |

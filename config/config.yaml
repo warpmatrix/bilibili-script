@@ -1,2 +1,6 @@
+video:
+  daily: [watch, share]
+  coin: 0
+
 # manga sign in platfrom: android or ios
 manga: android
