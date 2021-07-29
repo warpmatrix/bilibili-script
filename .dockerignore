@@ -1,0 +1,6 @@
+.*
+*.md
+image/
+doc/
+bin/
+makefile

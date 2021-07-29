@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/mitchellh/mapstructure"
 	log "main/src/logger"
 )
@@ -22,24 +20,17 @@ type Level struct {
 	NextExp interface{} `json:"next_exp" mapstructure:"next_exp"`
 }
 
-func ParseUser(blob []byte) (User, error) {
-	user, msg := User{}, Message{}
-	err := json.Unmarshal(blob, &msg)
+func GetUserInfo(blob []byte) (*User, error) {
+	data, err := ParseBlob(blob)
 	if err != nil {
-		return user, err
+		return nil, err
 	}
-	switch msg.Code {
-	case SUCCESS:
-		err = mapstructure.Decode(msg.Data, &user)
-	case NOT_LOGIN:
-		err = fmt.Errorf("用户信息已过期，请重新绑定你的 cookie 信息")
-	default:
-		err = fmt.Errorf("转换用户信息失败")
-	}
-	return user, err
+	var user User
+	err = mapstructure.Decode(data, &user)
+	return &user, err
 }
 
-func (user User) PrintInfo() {
+func (user *User) PrintInfo() {
 	log.Info("【用户名】:", user.Uname)
 	log.Info("【硬币数量】:", user.Money)
 	log.Info("【当前等级】:", user.Level.CurLevel)

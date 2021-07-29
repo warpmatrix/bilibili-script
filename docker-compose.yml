@@ -1,0 +1,16 @@
+version: '3'
+services:
+  warpmatrix:
+    build: .
+    env_file: cookie/warpmatrix.cookie
+    tty: true
+    stdin_open: true
+
+  liangfeng:
+    build:
+        context: .
+        args:
+            cron: "30 0 * * *"
+    env_file: cookie/liangfeng.cookie
+    tty: true
+    stdin_open: true

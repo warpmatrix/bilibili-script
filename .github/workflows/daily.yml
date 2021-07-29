@@ -1,0 +1,57 @@
+name: Daily Task
+
+
+on:
+  schedule:
+    - cron: '20 0 * * *'
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+      - uses: actions/cache@v2
+        id: cache-bin
+        with:
+          path: ./main
+          key: ${{ hashFiles('src/') }}
+      - name: Build
+        if: steps.cache-bin.outputs.cache-hit != 'true'
+        run : |
+          go build -o bin/ -v ./...
+          mv bin/src ./main
+
+  user:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: ./main
+          key: ${{ hashFiles('src/') }}
+      - name: Run Task
+        env:
+          BILI_JCT: ${{ secrets.BILI_JCT }}
+          DEDEUSER: ${{ secrets.DEDEUSER }}
+          SESSDATA: ${{ secrets.SESSDATA }}
+        run: ./main
+
+  user2:
+    needs: user
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: ./main
+          key: ${{ hashFiles('src/') }}
+      - name: Run Task
+        env:
+          COOKIE: ${{ secrets.USER_COOKIE }}
+        run: ./main

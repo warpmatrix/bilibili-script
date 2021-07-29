@@ -1,7 +1,3 @@
 # Bilibili Script
 
-## Quick Start
-
-1. create `cookie.list` file in this directory
-2. save cookies in `cookie.list` in `key=val` format
-3. execute `make` command
+该分支用于运行开发者的 github action，移步 [release](https://github.com/warpmatrix/bilibili-script/tree/release) 分支获得仓库的更多信息。

@@ -12,14 +12,18 @@ var cfg map[string]interface{}
 
 const (
 	filename  = "config.yaml"
-	directory = "./"
+	directory = "config/"
 )
 
 func init() {
 	filePath := filepath.Join(directory, filename)
 	blob, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Info("用户未进行自定义设置，使用默认配置")
+		if !filepath.IsAbs(filePath) {
+			workPath, _ := os.Getwd()
+			filePath = filepath.Join(workPath, filePath)
+		}
+		log.Info("容器未在定义路径", filePath, "下找到配置文件，使用默认配置")
 		return
 	}
 	err = yaml.Unmarshal(blob, &cfg)
