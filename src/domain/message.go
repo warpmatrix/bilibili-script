@@ -10,13 +10,14 @@ import (
 type Message struct {
 	Code int         `json:"code"`
 	Data interface{} `json:"data"`
-	Msg  string      `json:"message"`
 }
 
 const (
 	SUCCESS   = 0
 	NOT_LOGIN = -101
 	CSRF_FAIL = -111
+	REQ_FAIL = -400
+	NO_VIDEO = 10003
 )
 
 var cookie_kv, bili_jct, sessdata, dedeuserid string
@@ -76,11 +77,15 @@ func CheckMsgBlob(blob []byte) (*Message, error) {
 	switch msg.Code {
 	case SUCCESS:
 	case NOT_LOGIN:
-		return nil, fmt.Errorf("%s：用户信息已过期，请重新绑定你的 cookie 信息", msg.Msg)
+		return nil, fmt.Errorf("用户信息已过期，请重新绑定你的 cookie 信息：%s", string(blob))
 	case CSRF_FAIL:
-		return nil, fmt.Errorf("%s：用户 bili_jct 信息错误", msg.Msg)
+		return nil, fmt.Errorf("用户 bili_jct 信息错误：%s", string(blob))
+	case REQ_FAIL:
+		return nil, fmt.Errorf("请求错误：%s", string(blob))
+	case NO_VIDEO:
+		return nil, fmt.Errorf("不存在该稿件：%s", string(blob))
 	default:
-		return nil, fmt.Errorf(msg.Msg)
+		return nil, fmt.Errorf(string(blob))
 	}
 	return &msg, nil
 }

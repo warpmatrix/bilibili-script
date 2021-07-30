@@ -12,6 +12,7 @@ import (
 var mangaCfg interface{}
 var platform string
 
+// first level configuration name: manga
 func init() {
 	mangaCfg = domain.LoadCfg("manga")
 	if mangaCfg == nil {
@@ -21,23 +22,21 @@ func init() {
 	taskList = append(taskList, mangaClockIn)
 }
 
-func mangaDefaultInit(msg string) error {
-	platform = "android"
-	return fmt.Errorf(msg)
-}
-
 var mangaClockIn = &task{
 	name: "漫画签到",
 	init: func() error {
 		var isString bool
 		platform, isString = mangaCfg.(string)
 		if !isString {
-			return mangaDefaultInit("manga 配置的字段应为字符串")
+			return fmt.Errorf("manga 配置的字段应为字符串")
 		}
 		if !(platform == "android" || platform == "ios") {
-			return mangaDefaultInit("manga 配置的字段应为 android 或 ios")
+			return fmt.Errorf("manga 配置的字段应为 android 或 ios")
 		}
 		return nil
+	},
+	defaultInit: func() {
+		platform = "android"
 	},
 	impl: func(t *task) error {
 		log.Info(fmt.Sprintf("【漫画签到平台】：%s", platform))

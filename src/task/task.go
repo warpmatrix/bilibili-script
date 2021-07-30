@@ -6,10 +6,11 @@ import (
 )
 
 type task struct {
-	name   string
-	result string
-	init   func() error
-	impl   func(*task) error
+	name        string
+	result      string
+	init        func() error
+	defaultInit func()
+	impl        func(*task) error
 }
 
 var taskList []*task
@@ -18,6 +19,7 @@ func RunTasks() {
 	for _, task := range taskList {
 		if err := task.init(); err != nil {
 			log.Warning(err)
+			task.defaultInit()
 		}
 		if err := task.run(); err != nil {
 			log.Error(err)
