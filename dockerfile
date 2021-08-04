@@ -17,6 +17,6 @@ RUN apt-get update && \
  apt-get install --no-install-recommends -y cron && \
  rm -rf /var/lib/apt/lists/* && \
  apt-get clean
-RUN echo "${cron} cd /app && bin/main >> tmp.log" | crontab -
+RUN echo "${cron} cd /app && (. cookie/cookie; bin/main >> tmp.log 2>&1)" | crontab -
 
 ENTRYPOINT [ "./init.sh" ]
