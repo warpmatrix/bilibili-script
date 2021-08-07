@@ -44,7 +44,7 @@ func (t *task) init() error {
 	return nil
 }
 
-func (t *task) checkCfg(key string, val interface{}) error {
+func (t *task) setCfg(key string, val interface{}) error {
 	if f := t.checkFuncs[key]; f != nil {
 		if err := f(val); err != nil {
 			return fmt.Errorf("%s，使用默认配置字段", err)

@@ -94,8 +94,8 @@ var shareVideo = &task{
 }
 
 type coinCfg struct {
-	num  int
-	like bool
+	Num  int `mapstructure:"num"`
+	Like bool `mapstructure:"like"`
 }
 
 var coinVideo = &task{
@@ -104,12 +104,12 @@ var coinVideo = &task{
 		mapstructure.Decode(t.defaultCfg, &t.cfgMap)
 		switch t.config.(type) {
 		case int:
-			if err := t.checkCfg("num", t.config.(int)); err != nil {
+			if err := t.setCfg("num", t.config.(int)); err != nil {
 				log.Warning(err)
 			}
 		case map[string]interface{}:
 			for key, val := range t.config.(map[string]interface{}) {
-				if err := t.checkCfg(key, val); err != nil {
+				if err := t.setCfg(key, val); err != nil {
 					log.Warning(err)
 				}
 			}
@@ -121,7 +121,7 @@ var coinVideo = &task{
 		t.config = cfg
 		return nil
 	},
-	defaultCfg: coinCfg{num: 5, like: false},
+	defaultCfg: coinCfg{Num: 5, Like: false},
 	checkFuncs: map[string]func(interface{}) error{
 		"num": func(i interface{}) error {
 			num, isInt := i.(int)
@@ -146,7 +146,7 @@ var coinVideo = &task{
 		if err != nil {
 			return fmt.Errorf("获取用户信息失败：%s", err)
 		}
-		reqCoinNum := t.config.(coinCfg).num - rd.Coin/10
+		reqCoinNum := t.config.(coinCfg).Num - rd.Coin/10
 		if reqCoinNum <= 0 {
 			t.result = "该账户今天已完成投币"
 			return nil
@@ -166,7 +166,7 @@ var coinVideo = &task{
 		for reqCoinNum > 0 && len(idxs) > 0 && user.Money > 0 {
 			i := rand.Intn(len(idxs))
 			idx := idxs[i]
-			idxs[i] = idxs[len(idxs)]
+			idxs[i] = idxs[len(idxs)-1]
 			idxs = idxs[:len(idxs)-1]
 			getCoinUrl := "http://api.bilibili.com/x/web-interface/archive/coins"
 			params := [][]string{{"bvid", videos[idx].Bvid}}
@@ -174,13 +174,13 @@ var coinVideo = &task{
 			if err != nil {
 				return err
 			}
-			if coinedNum := gotData.(map[string]interface{})["multiply"].(int); coinedNum < 2 {
+			if coinedNum := int(gotData.(map[string]interface{})["multiply"].(float64)); coinedNum < 2 {
 				params := make(url.Values)
 				params.Add("bvid", videos[idx].Bvid)
 				coinNum := min(2-coinedNum, reqCoinNum, user.Money)
 				params.Add("multiply", strconv.Itoa(coinNum))
 				params.Add("csrf", client.GetBiliJct())
-				if t.config.(coinCfg).like {
+				if t.config.(coinCfg).Like {
 					params.Add("select_like", "1")
 				}
 				postCoinUrl := "http://api.bilibili.com/x/web-interface/coin/add"
@@ -191,7 +191,7 @@ var coinVideo = &task{
 			}
 		}
 		if reqCoinNum > 0 {
- 			if user.Money == 0 {
+			if user.Money == 0 {
 				return fmt.Errorf("用户硬币数量不足以完成投币任务")
 			} else if len(idxs) == 0 {
 				return fmt.Errorf("视频资源不足以完成投币任务")

@@ -1,6 +1,7 @@
 package domain_test
 
 import (
+	"main/src/client"
 	"main/src/domain"
 	"testing"
 
@@ -87,7 +88,9 @@ func TestParseUser(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			var user domain.User
-			err := mapstructure.Decode(tC.blob, &user)
+			data, err := client.ParseBlob(tC.blob)
+			assert.Nil(t, err)
+			err = mapstructure.Decode(data, &user)
 			assert.Equal(t, user, tC.user)
 			assert.Nil(t, err)
 		})
