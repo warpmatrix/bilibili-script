@@ -4,6 +4,7 @@ import (
 	"main/src/domain"
 	"testing"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -85,8 +86,9 @@ func TestParseUser(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			user, err := domain.GetUserInfo(tC.blob)
-			assert.Equal(t, *user, tC.user)
+			var user domain.User
+			err := mapstructure.Decode(tC.blob, &user)
+			assert.Equal(t, user, tC.user)
 			assert.Nil(t, err)
 		})
 	}

@@ -1,7 +1,6 @@
-package domain_test
+package client
 
 import (
-	"main/src/domain"
 	"os"
 	"testing"
 
@@ -13,6 +12,6 @@ func TestGetCookie(t *testing.T) {
 		"bili_jct=51685a18c19d95388285d238d3c81ad0\n" +
 		"DedeUserID=25032900"
 	os.Setenv("COOKIE", cookie)
-	cookie_kv := domain.GetCookie()
+	cookie_kv := GetCookie()
 	assert.Equal(t, "bili_jct=51685a18c19d95388285d238d3c81ad0;SESSDATA=37dfc8ba%2C1640068106%2C60f11%2A61;DedeUserID=25032900;", cookie_kv)
 }

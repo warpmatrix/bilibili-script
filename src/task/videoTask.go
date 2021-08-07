@@ -5,6 +5,7 @@ import (
 	"main/src/client"
 	"main/src/domain"
 	log "main/src/logger"
+	"math"
 	"math/rand"
 	"net/url"
 	"strconv"
@@ -12,17 +13,15 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-var videoCfg map[string]interface{}
-
 // first level configuration name: video
 func init() {
-	videoCfg = domain.LoadCfg("video").(map[string]interface{})
-	if videoCfg == nil {
+	config := domain.LoadCfg("video").(map[string]interface{})
+	if config == nil {
 		log.Info("用户未配置视频相关的配置")
 		return
 	}
 	// second level configuration name: daily
-	for _, daily := range videoCfg["daily"].([]interface{}) {
+	for _, daily := range config["daily"].([]interface{}) {
 		switch daily {
 		case "watch":
 			taskList = append(taskList, watchVideo)
@@ -33,14 +32,14 @@ func init() {
 		}
 	}
 	// second level configuration name: coin
-	if videoCfg["coin"] != nil {
+	if cfg := config["coin"]; cfg != nil {
+		coinVideo.config = cfg
 		taskList = append(taskList, coinVideo)
 	}
 }
 
 var watchVideo = &task{
 	name: "模拟观看视频",
-	init: defaultInit,
 	impl: func(t *task) error {
 		if rd, err := getReward(); err != nil {
 			return fmt.Errorf("获取用户信息失败：%s", err)
@@ -58,13 +57,9 @@ var watchVideo = &task{
 		params.Add("aid", strconv.Itoa(videos[idx].Aid))
 		params.Add("cid", strconv.Itoa(videos[idx].Cid))
 		params.Add("progres", strconv.Itoa(time))
-		params.Add("csrf", domain.GetBiliJct())
+		params.Add("csrf", client.GetBiliJct())
 		url := "https://api.bilibili.com/x/v2/history/report"
-		blob, err := client.ParseResp(client.PostForm(url, params))
-		if err != nil {
-			return err
-		}
-		if _, err := domain.CheckMsgBlob(blob); err != nil {
+		if err := client.CheckCode(client.PostForm(url, params)); err != nil {
 			return err
 		}
 		t.result = "成功模拟观看视频"
@@ -74,7 +69,6 @@ var watchVideo = &task{
 
 var shareVideo = &task{
 	name: "分享视频",
-	init: defaultInit,
 	impl: func(t *task) error {
 		if rd, err := getReward(); err != nil {
 			return fmt.Errorf("获取用户信息失败：%s", err)
@@ -89,13 +83,9 @@ var shareVideo = &task{
 		idx := rand.Intn(len(videos))
 		params := make(url.Values)
 		params.Add("bvid", videos[idx].Bvid)
-		params.Add("csrf", domain.GetBiliJct())
+		params.Add("csrf", client.GetBiliJct())
 		url := "https://api.bilibili.com/x/web-interface/share/add"
-		blob, err := client.ParseResp(client.PostForm(url, params))
-		if err != nil {
-			return err
-		}
-		if _, err := domain.CheckMsgBlob(blob); err != nil {
+		if err := client.CheckCode(client.PostForm(url, params)); err != nil {
 			return err
 		}
 		t.result = "成功模拟分享视频"
@@ -103,10 +93,110 @@ var shareVideo = &task{
 	},
 }
 
+type coinCfg struct {
+	num  int
+	like bool
+}
+
 var coinVideo = &task{
 	name: "视频投币",
-	init: defaultInit,
+	initFunc: func(t *task) error {
+		mapstructure.Decode(t.defaultCfg, &t.cfgMap)
+		switch t.config.(type) {
+		case int:
+			if err := t.checkCfg("num", t.config.(int)); err != nil {
+				log.Warning(err)
+			}
+		case map[string]interface{}:
+			for key, val := range t.config.(map[string]interface{}) {
+				if err := t.checkCfg(key, val); err != nil {
+					log.Warning(err)
+				}
+			}
+		default:
+			return fmt.Errorf("coin 配置的字段应为整数或键值对")
+		}
+		var cfg coinCfg
+		mapstructure.Decode(t.cfgMap, &cfg)
+		t.config = cfg
+		return nil
+	},
+	defaultCfg: coinCfg{num: 5, like: false},
+	checkFuncs: map[string]func(interface{}) error{
+		"num": func(i interface{}) error {
+			num, isInt := i.(int)
+			if !isInt {
+				return fmt.Errorf("num 配置的字段应为整数")
+			}
+			if !(0 <= num && num <= 5) {
+				return fmt.Errorf("num 配置的字段应为 0-5")
+			}
+			return nil
+		},
+		"like": func(i interface{}) error {
+			_, isBool := i.(bool)
+			if !isBool {
+				return fmt.Errorf("like 配置的字段应为 true 或 false")
+			}
+			return nil
+		},
+	},
 	impl: func(t *task) error {
+		rd, err := getReward()
+		if err != nil {
+			return fmt.Errorf("获取用户信息失败：%s", err)
+		}
+		reqCoinNum := t.config.(coinCfg).num - rd.Coin/10
+		if reqCoinNum <= 0 {
+			t.result = "该账户今天已完成投币"
+			return nil
+		}
+		videos, err := getVideos(6)
+		if err != nil {
+			return fmt.Errorf("获取推荐视频失败：%s", err)
+		}
+		idxs := make([]int, len(videos))
+		for i := range idxs {
+			idxs[i] = i
+		}
+		user, err := domain.GetUserInfo()
+		if err != nil {
+			return err
+		}
+		for reqCoinNum > 0 && len(idxs) > 0 && user.Money > 0 {
+			i := rand.Intn(len(idxs))
+			idx := idxs[i]
+			idxs[i] = idxs[len(idxs)]
+			idxs = idxs[:len(idxs)-1]
+			getCoinUrl := "http://api.bilibili.com/x/web-interface/archive/coins"
+			params := [][]string{{"bvid", videos[idx].Bvid}}
+			gotData, err := client.RecData(client.GetWithParams(getCoinUrl, params))
+			if err != nil {
+				return err
+			}
+			if coinedNum := gotData.(map[string]interface{})["multiply"].(int); coinedNum < 2 {
+				params := make(url.Values)
+				params.Add("bvid", videos[idx].Bvid)
+				coinNum := min(2-coinedNum, reqCoinNum, user.Money)
+				params.Add("multiply", strconv.Itoa(coinNum))
+				params.Add("csrf", client.GetBiliJct())
+				if t.config.(coinCfg).like {
+					params.Add("select_like", "1")
+				}
+				postCoinUrl := "http://api.bilibili.com/x/web-interface/coin/add"
+				if _, err = client.RecData(client.PostForm(postCoinUrl, params)); err != nil {
+					return err
+				}
+				reqCoinNum, user.Money = reqCoinNum-coinNum, user.Money-coinNum
+			}
+		}
+		if reqCoinNum > 0 {
+ 			if user.Money == 0 {
+				return fmt.Errorf("用户硬币数量不足以完成投币任务")
+			} else if len(idxs) == 0 {
+				return fmt.Errorf("视频资源不足以完成投币任务")
+			}
+		}
 		t.result = "投币成功"
 		return nil
 	},
@@ -125,11 +215,7 @@ func getReward() (*reward, error) {
 		return rd, nil
 	}
 	url := "http://api.bilibili.com/x/member/web/exp/reward"
-	blob, err := client.ParseResp(client.Get(url))
-	if err != nil {
-		return nil, err
-	}
-	data, err := domain.ParseBlob(blob)
+	data, err := client.RecData(client.Get(url))
 	if err != nil {
 		return nil, err
 	}
@@ -153,11 +239,7 @@ func getVideos(ps int) ([]video, error) {
 	}
 	url := "https://api.bilibili.com/x/web-interface/dynamic/region"
 	params := [][]string{{"ps", strconv.Itoa(ps)}, {"rid", "1"}}
-	blob, err := client.ParseResp(client.GetWithParams(url, params))
-	if err != nil {
-		return nil, err
-	}
-	data, err := domain.ParseBlob(blob)
+	data, err := client.RecData(client.GetWithParams(url, params))
 	if err != nil {
 		return nil, err
 	}
@@ -172,4 +254,14 @@ func getVideos(ps int) ([]video, error) {
 		}
 	}
 	return videos, nil
+}
+
+func min(arr ...int) int {
+	ret := math.MaxInt32
+	for _, v := range arr {
+		if ret > v {
+			ret = v
+		}
+	}
+	return ret
 }
