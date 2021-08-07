@@ -1,8 +1,10 @@
 package domain
 
 import (
-	"github.com/mitchellh/mapstructure"
+	"main/src/client"
 	log "main/src/logger"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 type User struct {
@@ -20,14 +22,21 @@ type Level struct {
 	NextExp interface{} `json:"next_exp" mapstructure:"next_exp"`
 }
 
-func GetUserInfo(blob []byte) (*User, error) {
-	data, err := ParseBlob(blob)
+var ptr *User
+
+func GetUserInfo() (*User, error) {
+	if ptr != nil {
+		return ptr, nil
+	}
+	url := "https://api.bilibili.com/x/web-interface/nav"
+	data, err := client.RecData(client.Get(url))
 	if err != nil {
 		return nil, err
 	}
 	var user User
 	err = mapstructure.Decode(data, &user)
-	return &user, err
+	ptr = &user
+	return ptr, err
 }
 
 func (user *User) PrintInfo() {

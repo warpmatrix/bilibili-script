@@ -9,37 +9,32 @@ import (
 	"net/url"
 )
 
-var mangaCfg interface{}
-var platform string
-
+// first level configuration name: manga
 func init() {
-	mangaCfg = domain.LoadCfg("manga")
-	if mangaCfg == nil {
+	config := domain.LoadCfg("manga")
+	if config == nil {
 		log.Info("用户未设置漫画相关的配置")
 		return
 	}
+	mangaClockIn.config = config
 	taskList = append(taskList, mangaClockIn)
-}
-
-func mangaDefaultInit(msg string) error {
-	platform = "android"
-	return fmt.Errorf(msg)
 }
 
 var mangaClockIn = &task{
 	name: "漫画签到",
-	init: func() error {
-		var isString bool
-		platform, isString = mangaCfg.(string)
+	initFunc: func(t *task) error {
+		platform, isString := t.config.(string)
 		if !isString {
-			return mangaDefaultInit("manga 配置的字段应为字符串")
+			return fmt.Errorf("manga 配置的字段应为字符串")
 		}
 		if !(platform == "android" || platform == "ios") {
-			return mangaDefaultInit("manga 配置的字段应为 android 或 ios")
+			return fmt.Errorf("manga 配置的字段应为 android 或 ios")
 		}
 		return nil
 	},
+	defaultCfg: "android",
 	impl: func(t *task) error {
+		platform := t.config.(string)
 		log.Info(fmt.Sprintf("【漫画签到平台】：%s", platform))
 		params := make(url.Values)
 		params.Add("platform", platform)

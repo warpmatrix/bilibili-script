@@ -1,4 +1,4 @@
-package domain
+package client
 
 import (
 	"encoding/json"
@@ -10,14 +10,30 @@ import (
 type Message struct {
 	Code int         `json:"code"`
 	Data interface{} `json:"data"`
-	Msg  string      `json:"message"`
 }
 
 const (
-	SUCCESS   = 0
-	NOT_LOGIN = -101
-	CSRF_FAIL = -111
+	SUCCESS      = 0
+	NOT_LOGIN    = -101
+	CSRF_FAIL    = -111
+	REQ_FAIL     = -400
+	NO_VIDEO     = 10003
+	COIN_SELF    = 34002
+	INVALID_COIN = 34003
+	COIN_SHORT   = 34004
+	OVER_COIN    = 34005
 )
+
+var codeText = map[int]string{
+	NOT_LOGIN:    "用户信息已过期，请重新绑定你的 cookie 信息",
+	CSRF_FAIL:    "用户 bili_jct 信息错误",
+	REQ_FAIL:     "请求错误",
+	NO_VIDEO:     "不存在该稿件",
+	COIN_SELF:    "不能给自己的稿件投币",
+	INVALID_COIN: "非法投币数目",
+	COIN_SHORT:   "投币间隔过短",
+	OVER_COIN:    "超过投币上限",
+}
 
 var cookie_kv, bili_jct, sessdata, dedeuserid string
 
@@ -30,12 +46,12 @@ func getCookie() string {
 		lines := strings.Split(cookies, "\n")
 		for _, line := range lines {
 			kv := strings.Split(line, "=")
-			switch kv[0] {
+			switch strings.ToLower(kv[0]) {
 			case "bili_jct":
 				bili_jct = kv[1]
-			case "SESSDATA":
+			case "sessdata":
 				sessdata = kv[1]
-			case "DedeUserID":
+			case "dedeuserid":
 				dedeuserid = kv[1]
 			default:
 			}
@@ -59,28 +75,17 @@ func GetBiliJct() string {
 	return bili_jct
 }
 
-func ParseBlob(blob []byte) (interface{}, error) {
-	msg, err := CheckMsgBlob(blob)
-	if err != nil {
-		return nil, err
-	}
-	return msg.Data, nil
-}
-
-func CheckMsgBlob(blob []byte) (*Message, error) {
+func checkMsgBlob(blob []byte) (*Message, error) {
 	var msg Message
-	err := json.Unmarshal(blob, &msg)
-	if err != nil {
+	if err := json.Unmarshal(blob, &msg); err != nil {
 		return nil, err
 	}
-	switch msg.Code {
-	case SUCCESS:
-	case NOT_LOGIN:
-		return nil, fmt.Errorf("%s：用户信息已过期，请重新绑定你的 cookie 信息", msg.Msg)
-	case CSRF_FAIL:
-		return nil, fmt.Errorf("%s：用户 bili_jct 信息错误", msg.Msg)
-	default:
-		return nil, fmt.Errorf(msg.Msg)
+	if msg.Code != SUCCESS {
+		if len(codeText[msg.Code]) > 0 {
+			return nil, fmt.Errorf("%s：%s", codeText[msg.Code], string(blob))
+		} else {
+			return nil, fmt.Errorf("%s", string(blob))
+		}
 	}
 	return &msg, nil
 }

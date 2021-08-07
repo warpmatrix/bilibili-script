@@ -2,10 +2,7 @@ package client
 
 import (
 	"crypto/tls"
-	"fmt"
 	"io"
-	"io/ioutil"
-	"main/src/domain"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -25,7 +22,7 @@ func init() {
 func newRequest(method string, url string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest(method, url, body)
 	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.101 Safari/537.36")
-	req.Header.Set("Cookie", domain.GetCookie())
+	req.Header.Set("Cookie", GetCookie())
 	req.Header.Add("referer", "https://www.bilibili.com/")
 	req.Header.Add("connection", "keep-alive")
 	return req, err
@@ -52,7 +49,7 @@ func GetWithParams(url string, params[][]string) (*http.Response, error) {
 	return get(url, params)
 }
 
-func Post(url string, contentType string, body io.Reader) (*http.Response, error) {
+func post(url string, contentType string, body io.Reader) (*http.Response, error) {
 	req, err := newRequest(http.MethodPost, url, body)
 	if err != nil {
 		return nil, err
@@ -64,28 +61,16 @@ func Post(url string, contentType string, body io.Reader) (*http.Response, error
 }
 
 func PostJson(url string, jsonBlob []byte) (*http.Response, error) {
-	return Post(url, "application/json", strings.NewReader(string(jsonBlob)))
+	return post(url, "application/json", strings.NewReader(string(jsonBlob)))
 }
 
-func PostForm(url string, data url.Values) (*http.Response, error) {
-	return Post(url, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+func PostForm(url string, params url.Values) (*http.Response, error) {
+	return post(url, "application/x-www-form-urlencoded", strings.NewReader(params.Encode()))
 }
 
 func do(req *http.Request) (*http.Response, error) {
 	wait(1, 3)
 	return client.Do(req)
-}
-
-func ParseResp(resp *http.Response, err error) ([]byte, error) {
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(resp.Status)
-	}
-	ret, err := ioutil.ReadAll(resp.Body)
-	return ret, err
 }
 
 func wait(minSec, maxSec int) {
