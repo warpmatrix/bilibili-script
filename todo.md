@@ -18,8 +18,9 @@
 - [x] 多账户的支持，通过 docker-compose 进行具体配置
 - [x] 重构 status.code 部分，部分请求可能以 400 状态码的形式返回结构
 - [x] github action 对多用户的支持，实现 user_cookie 环境变量
-- [ ] 完成日常任务：manga、live、daily
-- [ ] 重构 task，每个任务有自己独立的配置并实现默认配置的支持
+- [x] 重构 task，每个任务有自己独立的配置并实现默认配置的支持
+- [x] 完成日常任务：manga、daily
+- [ ] live 和大会员相关任务
 - [ ] error 的重构
 - [ ] 使用 docker secrect 管理 cookie 作为系统变量进行传递
 - [ ] log 的持久化

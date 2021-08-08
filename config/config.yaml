@@ -1,7 +1,11 @@
 video:
+  # video daily tasks: array with watch or/and share
   daily: [watch, share]
+  # coin task: fill coin num with an int directly, or multi-kv as following:
   coin:
+    # the number of using coin
     num: 5
+    # whether like the video when coin
     like: false
 
 # manga sign in platfrom: android or ios
