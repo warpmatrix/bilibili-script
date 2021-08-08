@@ -3,10 +3,10 @@ name: Develop Workflow
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, release ]
 
   pull_request:
-    branches: [ master ]
+    branches: [ master, release ]
 
   workflow_dispatch:
 
@@ -23,7 +23,7 @@ jobs:
         with:
           path: ./main
           key: ${{ hashFiles('src/') }}
-
+ 
       - uses: actions/setup-go@v2
         if: steps.cache-bin.outputs.cache-hit != 'true'
         with:

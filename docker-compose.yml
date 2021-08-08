@@ -6,6 +6,7 @@ services:
     tty: true
     stdin_open: true
 
+  # more user or settings
   # user2:
   #   build:
   #     context: .

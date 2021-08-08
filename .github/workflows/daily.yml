@@ -3,6 +3,7 @@ name: Daily Task
 
 on:
   schedule:
+    # UTC format, you can modify cron time based on the specific timezone
     - cron: '20 0 * * *'
   workflow_dispatch:
 
@@ -43,7 +44,7 @@ jobs:
         run: ./main
 
   # user2:
-  #   needs: build
+  #   needs: user
   #   runs-on: ubuntu-latest
   #   steps:
   #     - uses: actions/checkout@v2
@@ -53,10 +54,10 @@ jobs:
   #         key: ${{ hashFiles('src/') }}
   #     - name: Run Task
   #       env:
+  #         # another way to set COOKIE, which should contain three required cookies mentioned above
   #         COOKIE: ${{ secrets.USER_COOKIE }}
+  #         # set custom configuration, fill the CFGFILE with the path to config file, e.g.
   #         CFGFILE: config/user-cfg.yaml
   #       run: |
-  #         if [ -n "$CFGFILE" ]; then
-  #           mv $CFGFILE config/config.yaml
-  #         fi
+  #         if [ -n "$CFGFILE" ]; then mv $CFGFILE config/config.yaml; fi
   #         ./main
