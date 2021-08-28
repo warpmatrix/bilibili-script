@@ -19,7 +19,7 @@ func CheckCode(resp *http.Response, err error) error {
 	if err != nil {
 		return err
 	}
-	_, err = checkMsgBlob(blob)
+	_, err = ParseBlob(blob)
 	return err
 }
 

@@ -1,11 +1,9 @@
-package domain_test
+package domain
 
 import (
 	"main/src/client"
-	"main/src/domain"
 	"testing"
 
-	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,85 +11,100 @@ func TestParseUser(t *testing.T) {
 	testCases := []struct {
 		desc string
 		blob []byte
-		user domain.User
-	}{
-		{
-			desc: "default test",
-			blob: []byte(`{
-				"code": 0,
-				"data": {
-					"uname": "username",
-					"level_info": {
-						"current_level": 5,
-						"current_min": 10800,
-						"current_exp": 19664,
-						"next_exp": 28800
+		user User
+	}{{
+		desc: "default test",
+		blob: []byte(`{
+			"code": 0,
+			"data": {
+				"uname": "username"
+			}
+		}`),
+		user: User{
+			Name: "username",
+		},
+	}, {
+		desc: "chinese username",
+		blob: []byte(`{
+			"code": 0,
+			"data": {
+				"uname": "中文用户名"
+			}
+		}`),
+		user: User{
+			Name: "中文用户名",
+		},
+	}, {
+		desc: "unmax level user",
+		blob: []byte(`{
+			"code": 0,
+			"data": {
+				"level_info": {
+					"current_level": 5,
+					"current_min": 10800,
+					"current_exp": 19664,
+					"next_exp": 28800
+				}
+			}
+		}`),
+		user: User{
+			Level: level{
+				CurLevel: 5,
+				CurExp:   19664,
+				NextExp:  28800.0,
+			},
+		},
+	}, {
+		desc: "max level user",
+		blob: []byte(`{
+			"code": 0,
+			"data": {
+				"level_info": {
+					"current_level": 6,
+					"current_min": 28800,
+					"current_exp": 31920,
+					"next_exp": "--"
+				}
+			}
+		}`),
+		user: User{
+			Level: level{
+				CurLevel: 6,
+				CurExp:   31920,
+				NextExp:  "--",
+			},
+		},
+	}, {
+		desc: "vip",
+		blob: []byte(`{
+			"code": 0,
+			"data": {
+				"vip": {
+					"type": 2,
+					"status": 1,
+					"label": {
+						"text": "年度大会员"
 					}
 				}
-			}`),
-			user: domain.User{
-				Uname: "username",
-				Level: domain.Level{
-					CurLevel: 5,
-					CurExp:   19664,
-					NextExp:  28800.0,
+			}
+		}`),
+		user: User{
+			Vip: vip{
+				Typ:  2,
+				St:   1,
+				text: "年度大会员",
+				Remain: map[string]interface{}{
+					"label": map[string]interface{}{"text": "年度大会员"},
 				},
 			},
 		},
-		{
-			desc: "chinese username",
-			blob: []byte(`{
-				"code": 0,
-				"data": {
-					"uname": "中文用户名",
-					"level_info": {
-						"current_level": 4,
-						"current_min": 1080,
-						"current_exp": 1964,
-						"next_exp": 2880
-					}
-				}
-			}`),
-			user: domain.User{
-				Uname: "中文用户名",
-				Level: domain.Level{
-					CurLevel: 4,
-					CurExp:   1964,
-					NextExp:  2880.0,
-				},
-			},
-		},
-		{
-			desc: "max level user",
-			blob: []byte(`{
-				"code": 0,
-				"data": {
-					"uname": "maxLevelUser",
-					"level_info": {
-						"current_level": 6,
-						"current_min": 28800,
-						"current_exp": 31920,
-						"next_exp": "--"
-					}
-				}
-			}`),
-			user: domain.User{
-				Uname: "maxLevelUser",
-				Level: domain.Level{
-					CurLevel: 6,
-					CurExp:   31920,
-					NextExp:  "--",
-				},
-			},
-		},
-	}
+	}}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			var user domain.User
 			data, err := client.ParseBlob(tC.blob)
 			assert.Nil(t, err)
-			err = mapstructure.Decode(data, &user)
-			assert.Equal(t, user, tC.user)
+			ptr, err := parseUserInfo(data.(map[string]interface{}))
+			assert.Equal(t, *ptr, tC.user)
 			assert.Nil(t, err)
 		})
 	}

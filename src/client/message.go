@@ -22,6 +22,7 @@ const (
 	INVALID_COIN = 34003
 	COIN_SHORT   = 34004
 	OVER_COIN    = 34005
+	NO_BCOIN     = 1300014
 )
 
 var codeText = map[int]string{
@@ -33,6 +34,7 @@ var codeText = map[int]string{
 	INVALID_COIN: "非法投币数目",
 	COIN_SHORT:   "投币间隔过短",
 	OVER_COIN:    "超过投币上限",
+	NO_BCOIN:     "b 币数量不足",
 }
 
 var cookie_kv, bili_jct, sessdata, dedeuserid string

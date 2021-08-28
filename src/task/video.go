@@ -184,7 +184,7 @@ var coinVideo = &task{
 					params.Add("select_like", "1")
 				}
 				postCoinUrl := "http://api.bilibili.com/x/web-interface/coin/add"
-				if _, err = client.RecData(client.PostForm(postCoinUrl, params)); err != nil {
+				if err := client.CheckCode(client.PostForm(postCoinUrl, params)); err != nil {
 					return err
 				}
 				reqCoinNum, user.Money = reqCoinNum-coinNum, user.Money-coinNum
